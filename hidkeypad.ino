@@ -182,36 +182,71 @@ void loop(void)
     char key = keypad.getKey();
     if(key != NO_KEY) {
       tm = millis();
-      if(key == '#' || key == '*') {
-        if(lastChar != 0) {
+      if(key == '#') {
+        if(lastChar == '#') {
+          lastChar = 0;
+        } else {
+          lastChar = key;
+        }
+      } else if(key == '*') {
+        if(lastChar == '*') {
           lastChar = 0;
         } else {
           lastChar = key;
         }
       } else {
-        char buf[2] = " ";
-        int code = key - '0';
-        switch(lastChar) {
-          case '*':
-            buf[0] = 'a' + code;
-            break;
-          case '#':
-            buf[0] = 'k' + code;
-            break;
-          default:
-            buf[0] = key;
-        }
-        //Serial.print("\nSending ");
-        //Serial.println(buf);
-        ble.print("AT+BleKeyboard=");
-        ble.println(buf);
-        if(ble.waitForOK()) {
-          //Serial.println(F("OK"));
+        if(lastChar == '#') {
+          if(key >= '1' && key <= '8' && key != '7') {
+            ble.print("AT+BleHidControlKey=");
+            switch(key) {
+              case '1': //
+                ble.println("BRIGHTNESS+");
+                break;
+              case '2': // volume up
+                ble.println("VOLUME+");
+                break;
+              case '3': //
+                ble.println("BRIGHTNESS-");
+                break;
+              case '4': // previous
+                ble.println("MEDIAPREVIOUS");
+                break;
+              case '5': // play/stop
+                ble.println("PLAYPAUSE");
+                break;
+              case '6': // next
+                ble.println("MEDIANEXT");
+                break;
+              case '8': // volume down
+                 ble.println("VOLUME-");
+                 break;
+              default:
+                break;
+            }
+            if(ble.waitForOK()) {
+              //Serial.println(F("OK"));
+            } else {
+              //Serial.println(F("FAILED"));
+            }
+          }
         } else {
-          //Serial.println(F("FAILED"));
+          char buf[2] = " ";
+          int code = key - '0';
+          if(lastChar == '*') {
+            buf[0] = 'a' + (key - '0');
+          } else {
+            buf[0] = key;
+          }
+          ble.print("AT+BleKeyboard=");
+          ble.println(buf);
+          lastChar = 0;
+          if(ble.waitForOK()) {
+            //Serial.println(F("OK"));
+          } else {
+            //Serial.println(F("FAILED"));
+          }
         }
-        lastChar = 0;
-      }
+     }
       delay(10);
     }
     if(millis() - tm > 3000) {
