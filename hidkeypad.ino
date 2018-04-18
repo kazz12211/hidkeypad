@@ -249,7 +249,7 @@ void loop(void)
      }
       delay(10);
     }
-    if(millis() - tm > 3000) {
+    if(millis() - tm > 2000) {
       tm = millis();
       lastChar = 0;
     }
